@@ -1,0 +1,152 @@
+from abc import ABC, abstractmethod
+import random
+
+# -------------------- Account --------------------
+class Account:
+    def __init__(self, username, password):
+        self.username = username
+        self.__password = password
+
+    def login(self):
+        u = input("Username: ")
+        p = input("Password: ")
+
+        if u == self.username and p == self.__password:
+            print("✅ Login Successful\n")
+            return True
+        else:
+            print("❌ Invalid Credentials")
+            return False
+
+
+# -------------------- Flight --------------------
+class Flight:
+    def __init__(self, flight_no, name, source, destination, price):
+        self.flight_no = flight_no
+        self.name = name
+        self.source = source
+        self.destination = destination
+        self.price = price
+
+    def display(self):
+        print(f"{self.flight_no}. {self.name} | {self.source} → {self.destination} | ₹{self.price}")
+
+
+# -------------------- Passenger --------------------
+class Passenger:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+
+# -------------------- Booking --------------------
+class Booking:
+    def __init__(self):
+        self.selected_flight = None
+        self.passengers = []
+
+    def choose_flight(self, flights):
+        print("\nAvailable Flights:")
+        for f in flights:
+            f.display()
+
+        choice = int(input("Select flight number: "))
+
+        for f in flights:
+            if f.flight_no == choice:
+                self.selected_flight = f
+                print(f"✅ Selected: {f.name}")
+                return
+        print("Invalid choice")
+
+    def add_passengers(self):
+        n = int(input("Number of passengers: "))
+        for i in range(n):
+            name = input(f"Passenger {i+1} Name: ")
+            age = int(input("Age: "))
+            self.passengers.append(Passenger(name, age))
+
+    def calculate_total(self):
+        return len(self.passengers) * self.selected_flight.price
+
+    def generate_ticket(self):
+        ticket_id = random.randint(10000, 99999)
+        print("\n------ TICKET ------")
+        print("Ticket ID:", ticket_id)
+        print("Flight:", self.selected_flight.name)
+        print("Route:", self.selected_flight.source, "→", self.selected_flight.destination)
+
+        print("\nPassengers:")
+        for p in self.passengers:
+            print(f"{p.name} (Age {p.age})")
+
+        print("Total Amount:", self.calculate_total())
+        print("--------------------")
+
+
+# -------------------- Payment --------------------
+class Payment(ABC):
+    @abstractmethod
+    def pay(self, amount):
+        pass
+
+
+class UPI(Payment):
+    def pay(self, amount):
+        print(f"✅ ₹{amount} paid via UPI")
+
+
+class Card(Payment):
+    def pay(self, amount):
+        print(f"✅ ₹{amount} paid via Card")
+
+
+class Cash(Payment):
+    def pay(self, amount):
+        print(f"✅ ₹{amount} paid via Cash")
+
+
+# -------------------- Flight System --------------------
+class FlightSystem:
+    def __init__(self):
+        self.flights = [
+            Flight(1, "Indigo", "Hyderabad", "Delhi", 5000),
+            Flight(2, "Air India", "chennai", "Mumbai", 4500),
+            Flight(3, "Air Asia", "pune", "Bangalore", 3000),
+            Flight(4, "Etihad Airways", "kolkata", "Chennai", 3500)
+        ]
+
+    def start(self):
+        booking = Booking()
+        booking.choose_flight(self.flights)
+
+        if booking.selected_flight:
+            booking.add_passengers()
+            total = booking.calculate_total()
+
+            print("\nTotal Amount:", total)
+
+            print("\nPayment Options:")
+            print("1. UPI\n2. Card\n3. Cash")
+
+            choice = input("Choose payment: ")
+
+            if choice == "1":
+                UPI().pay(total)
+            elif choice == "2":
+                Card().pay(total)
+            elif choice == "3":
+                Cash().pay(total)
+            else:
+                print("Invalid payment")
+
+            booking.generate_ticket()
+            print("\n✈️ Booking Successful!")
+
+
+# -------------------- Main --------------------
+user = Account("Mani Kumar", "9398")
+
+if user.login():
+    system = FlightSystem()
+    system.start()
